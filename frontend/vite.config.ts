@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: process.env.VITE_HOST || 'localhost',
+    host: '0.0.0.0',
     port: 5173,
     watch: {
       usePolling: true,
