@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import { useFastAPIChat } from '@/hooks/useFastAPIChat'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,11 +69,11 @@ export function AgentChat() {
   const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0)
   const [collapsedNamespaces, setCollapsedNamespaces] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { spaceId } = useParams<{ spaceId: string }>()
   
   const userid = useMemo(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    return urlParams.get('space_id') || 'user'
-  }, [])
+    return spaceId || 'user'
+  }, [spaceId])
 
   const {
     messages,
@@ -107,24 +108,8 @@ export function AgentChat() {
 
   const handleFileSelect = async (file: File) => {
     setSelectedFile(file)
-    // Upload the zip immediately
-    const formData = new FormData()
-    formData.append('userid', userid)
-    formData.append('zip_file', file)
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/agent/upload-zip`, {
-        method: 'POST',
-        body: formData,
-      })
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-      // Refresh file list
-      setFileRefreshTrigger(prev => prev + 1)
-    } catch (error) {
-      console.error('Upload error:', error)
-    }
+    // File will be uploaded with the next message submission
+    // No need for separate upload
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,8 +119,8 @@ export function AgentChat() {
     setSubmitted(true)
     await sendMessage(instructions, {
       workspace_path: '/tmp/workspace',
-      userid: userid
-    })
+      space_id: userid
+    }, selectedFile || undefined)
     
     setInstructions('')
     setSelectedFile(null)

@@ -8,6 +8,7 @@ from app.config.settings import get_settings
 from app.routers.agent import router as agent_router
 from app.routers.memory import router as memory_router
 from app.routers.skills import router as skills_router
+from app.routers.workspaces import router as workspaces_router
 from app.middleware.logging import LoggingMiddleware
 from app.middleware.error_handlers import (
     http_exception_handler,
@@ -62,6 +63,7 @@ def create_application() -> FastAPI:
     app.include_router(agent_router)
     app.include_router(memory_router)
     app.include_router(skills_router)
+    app.include_router(workspaces_router)
 
     return app
 

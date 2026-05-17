@@ -1,17 +1,47 @@
-from fastapi import APIRouter, HTTPException, Form, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Form, Depends, UploadFile, File, Header
 from fastapi.responses import JSONResponse, StreamingResponse
 from typing import Optional, List, Any, Dict
 import json
 import asyncio
 import zipfile
+import base64
 from pathlib import Path
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, SystemMessage
+from sqlalchemy.orm import Session
 
 from app.models.agent import AgentRequest, AgentResponse, ErrorResponse
+from app.models.database import get_db, Workspace
 from app.services.agent_service import AgentService
 from app.dependencies import get_agent_service
 
 router = APIRouter(prefix="/agent", tags=["agent"])
+
+
+async def verify_clerk_token(authorization: str = Header(None)) -> str:
+    """Verify Clerk JWT token and return user ID"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Invalid authorization scheme")
+
+        # Extract user ID from JWT claims
+        parts = token.split(".")
+        if len(parts) != 3:
+            raise HTTPException(status_code=401, detail="Invalid token format")
+        
+        payload = parts[1]
+        padding = 4 - len(payload) % 4
+        if padding != 4:
+            payload += "=" * padding
+        
+        decoded = json.loads(base64.urlsafe_b64decode(payload))
+        return decoded.get("sub")  # Clerk user ID
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
 def serialize_message(msg: Any) -> Dict[str, Any]:
@@ -64,18 +94,32 @@ def serialize_message(msg: Any) -> Dict[str, Any]:
 @router.post("/run-agent-stream")
 async def run_agent_stream(
     prompt: str = Form(...),
-    userid: str = Form(...),
+    space_id: str = Form(...),
     zip_file: Optional[UploadFile] = File(None),
     agent_service: AgentService = Depends(get_agent_service),
+    db: Session = Depends(get_db),
+    user_id: str = Depends(verify_clerk_token),
 ):
     """
     Run the deep agent with streaming response.
 
     - **prompt**: The user prompt/instructions to send to the agent
-    - **userid**: Unique identifier for the user session
+    - **space_id**: Workspace space_id (from URL query param)
     - **zip_file**: Optional zip file containing code to be unzipped into the workspace
     """
     try:
+        # Verify workspace exists and belongs to authenticated user
+        workspace = db.query(Workspace).filter(
+            Workspace.space_id == space_id,
+            Workspace.user_id == user_id
+        ).first()
+        
+        if not workspace:
+            raise HTTPException(status_code=404, detail="Workspace not found or access denied")
+        
+        # Use space_id as the userid for workspace operations
+        userid = space_id
+        
         # Handle zip file upload if provided
         if zip_file:
             workspace_path = agent_service.create_workspace(userid)

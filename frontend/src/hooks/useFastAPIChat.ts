@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useAuth } from '@clerk/react';
 
 interface Message {
   id: string;
@@ -38,6 +39,7 @@ interface ChatOptions {
 }
 
 export function useFastAPIChat({ apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000' }: ChatOptions = {}) {
+  const { getToken } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [files, setFiles] = useState<Record<string, string>>({});
@@ -221,15 +223,20 @@ export function useFastAPIChat({ apiUrl = import.meta.env.VITE_API_URL || 'http:
     abortControllerRef.current = new AbortController();
 
     try {
+      const token = await getToken();
+      
       const formData = new FormData();
       formData.append('prompt', content);
-      formData.append('userid', options.userid || 'user123');
+      formData.append('space_id', options.space_id || options.userid || 'user');
       if (file) {
         formData.append('zip_file', file);
       }
 
       const response = await fetch(`${apiUrl}/agent/run-agent-stream`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
         signal: abortControllerRef.current.signal,
       });
@@ -280,7 +287,7 @@ export function useFastAPIChat({ apiUrl = import.meta.env.VITE_API_URL || 'http:
       }
       setIsLoading(false);
     }
-  }, [apiUrl, isLoading, parseSSEData, handleStateUpdate]);
+  }, [apiUrl, isLoading, parseSSEData, handleStateUpdate, getToken]);
 
   const stopStream = useCallback(() => {
     if (abortControllerRef.current) {
