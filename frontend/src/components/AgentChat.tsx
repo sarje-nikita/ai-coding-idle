@@ -396,12 +396,12 @@ export function AgentChat() {
                       }
 
                       // Find tool results for this AI message
-                      const toolResults = message.tool_calls?.map(tc => {
+                      const toolResults = message.tool_calls?.map((tc: any) => {
                         const result = messages.find(m => 
                           m.type === 'tool' && m.tool_call_id === tc.id
                         );
                         return { toolCall: tc, result };
-                      }).filter(({ result }) => result !== undefined) || [];
+                      }).filter(({ result }: { result?: any }) => result !== undefined) || [];
 
                       // Only skip AI messages that have tool calls but no content AND no results yet
                       if (message.type === 'ai' && !message.content && message.tool_calls && message.tool_calls.length > 0 && toolResults.length === 0) {
@@ -420,7 +420,7 @@ export function AgentChat() {
                             {message.tool_calls && message.tool_calls.length > 0 && (
                               <div className="w-full space-y-1">
                                 <Accordion type="multiple" className="w-full">
-                                  {toolResults.map(({ toolCall, result }, idx) => (
+                                  {toolResults.map(({ toolCall, result }: { toolCall: any; result?: any }, idx: number) => (
                                     <AccordionItem key={toolCall.id || idx} value={`tool-${idx}`} className="border rounded-lg bg-slate-50 dark:bg-slate-800/50">
                                       <AccordionTrigger className="px-3 py-2 hover:no-underline hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
                                         <div className="flex items-center gap-2 text-left w-full">
