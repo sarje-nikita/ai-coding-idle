@@ -13,9 +13,10 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    middlewareMode: true,
-  },
-  build: {
-    minify: false,
+    hmr: {
+      host: '15.206.153.229',
+      port: 5173,
+      protocol: 'http',
+    },
   },
 })
