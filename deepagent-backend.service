@@ -1,0 +1,17 @@
+[Unit]
+Description=DeepAgent Backend API Service
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/ai-coding-idle/backend
+Environment="PATH=/home/ec2-user/ai-coding-idle/backend/.venv/bin"
+ExecStart=/home/ec2-user/ai-coding-idle/backend/.venv/bin/python main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
