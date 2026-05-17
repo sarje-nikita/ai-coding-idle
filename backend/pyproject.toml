@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepagent-poc"
+version = "0.1.0"
+description = "DeepAgent POC - AI-powered coding assistant with sandbox execution"
+authors = [
+    {name = "DeepAgent Team"}
+]
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "deepagents",
+    "langchain",
+    "langchain-openai",
+    "langchain-anthropic",
+    "pytest>=7.0.0",
+    "python-dotenv>=1.0.0",
+    "langgraph-checkpoint-sqlite",
+    "python-multipart>=0.0.6",
+    "langgraph-cli[inmem]",
+    "boto3>=1.42.3",
+    "daytona>=0.121.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+]
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+]
+
+[project.scripts]
+deepagent = "main:main"

@@ -1,0 +1,15 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+deepagents
+langchain
+langchain-openai
+langchain-anthropic  # in case needed
+pytest>=7.0.0  # for startup_commands
+python-dotenv>=1.0.0
+langgraph-checkpoint-sqlite
+python-multipart>=0.0.6
+langgraph-cli[inmem]
+daytona>=0.121.0  # Daytona SDK for remote sandboxes
+requests>=2.0.0  # For API calls
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
