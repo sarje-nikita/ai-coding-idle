@@ -24,7 +24,7 @@ import {
   SiPython,
   SiJavascript,
   SiTypescript,
-  SiCss3,
+  SiCss,
   SiHtml5,
   SiJson,
   SiMarkdown,
@@ -222,7 +222,7 @@ function FileTreeItem({
       return <SiHtml5 className="h-4 w-4 text-orange-500" />
     }
     if (['css', 'scss', 'sass', 'less'].includes(ext || '')) {
-      return <SiCss3 className="h-4 w-4 text-blue-400" />
+      return <SiCss className="h-4 w-4 text-blue-400" />
     }
     
     // Data/Config files
